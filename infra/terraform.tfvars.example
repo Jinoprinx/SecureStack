@@ -1,0 +1,13 @@
+# ---------------------------------------------------------------------------
+# Example variable values — copy to terraform.tfvars and fill in real values
+# NEVER commit terraform.tfvars to version control.
+# ---------------------------------------------------------------------------
+
+aws_region           = "us-east-1"
+environment          = "dev"
+project_name         = "securestack"
+slack_webhook_url    = ""                                           # "https://hooks.slack.com/services/T00/B00/xxxx"
+alert_email          = ""                                           # "security-team@example.com"
+bedrock_model_id     = "anthropic.claude-3-sonnet-20240229-v1:0"
+enable_api_key       = false
+dashboard_origin_url = "http://localhost:3000"

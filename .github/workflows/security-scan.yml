@@ -1,0 +1,70 @@
+name: PR Security & Testing Pipeline
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  security-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 1. TruffleHog Secrets Scanning
+      - name: TruffleHog OSS Secrets Scan
+        uses: trufflesecurity/trufflehog-gg-action@main
+        with:
+          path: ./
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
+          extra_args: --only-verified
+
+      # 2. Terraform Static Security Scan (Checkov)
+      - name: Run Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: securestack/infra
+          framework: terraform
+          output_format: cli
+          soft_fail: true # Change to false to block merge on findings
+
+      # 3. Terraform Linting
+      - name: Setup TFLint
+        uses: shadowmoose/setup-tflint@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run TFLint
+        run: |
+          cd securestack/infra
+          tflint --init
+          tflint --recursive
+
+      # 4. Set up Python for Lambda Tests
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest boto3 botocore
+          if [ -f securestack/lambdas/triage/requirements.txt ]; then pip install -r securestack/lambdas/triage/requirements.txt; fi
+          if [ -f securestack/lambdas/remediate/requirements.txt ]; then pip install -r securestack/lambdas/remediate/requirements.txt; fi
+          if [ -f securestack/lambdas/explainer/requirements.txt ]; then pip install -r securestack/lambdas/explainer/requirements.txt; fi
+          if [ -f securestack/lambdas/api/requirements.txt ]; then pip install -r securestack/lambdas/api/requirements.txt; fi
+
+      # 5. Run Python Pytest Suite
+      - name: Run Pytest
+        run: |
+          cd securestack
+          python -m pytest tests/ -v

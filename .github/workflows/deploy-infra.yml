@@ -1,0 +1,54 @@
+name: Terraform Infrastructure Deployment
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'securestack/infra/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'securestack/infra/**'
+
+permissions:
+  id-token: write # Required for requesting AWS credentials via OIDC
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Configure AWS credentials using OIDC (GitHub Actions Federated Login)
+      # Avoids hardcoding long-lived access keys in secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION || 'us-east-1' }}
+          audience: sigstore
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.0
+
+      - name: Terraform Format check
+        run: terraform -chdir=securestack/infra fmt -check
+
+      - name: Terraform Initialize
+        run: terraform -chdir=securestack/infra init
+
+      - name: Terraform Validate
+        run: terraform -chdir=securestack/infra validate
+
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request'
+        run: terraform -chdir=securestack/infra plan -no-color
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform -chdir=securestack/infra apply -auto-approve
