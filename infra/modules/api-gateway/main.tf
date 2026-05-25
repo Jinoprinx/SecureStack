@@ -666,6 +666,36 @@ resource "aws_api_gateway_deployment" "dashboard" {
   }
 }
 
+# ===========================================================================
+# API Gateway Account — CloudWatch Logs Role (required for access logging)
+# ===========================================================================
+
+resource "aws_iam_role" "api_gateway_cloudwatch" {
+  name = "${var.name_prefix}-apigw-cloudwatch-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      }
+    }]
+  })
+
+  tags = var.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch" {
+  role       = aws_iam_role.api_gateway_cloudwatch.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+resource "aws_api_gateway_account" "main" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch.arn
+}
+
 resource "aws_api_gateway_stage" "dashboard" {
   deployment_id = aws_api_gateway_deployment.dashboard.id
   rest_api_id   = aws_api_gateway_rest_api.dashboard.id
@@ -685,6 +715,8 @@ resource "aws_api_gateway_stage" "dashboard" {
   }
 
   tags = var.common_tags
+
+  depends_on = [aws_api_gateway_account.main]
 }
 
 resource "aws_cloudwatch_log_group" "api_gateway" {

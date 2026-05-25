@@ -12,7 +12,35 @@ export function getActiveTenantId(): string {
   return 'tenant-prod';
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | null> {
+  if (!API_URL) return null;
+  try {
+    const tenantId = getActiveTenantId();
+    const res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        ...options?.headers,
+        'Content-Type': 'application/json',
+        'X-Tenant-Id': tenantId
+      }
+    });
+    if (!res.ok) {
+      console.warn(`API call failed for ${path}: ${res.statusText}`);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn(`Failed to fetch from real API: ${err}`);
+    return null;
+  }
+}
+
 export async function fetchTenants(): Promise<Tenant[]> {
+  const realData = await apiFetch<Tenant[]>('/tenants');
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   // Read local tenants list or default
   if (typeof window !== 'undefined') {
@@ -46,6 +74,12 @@ export async function fetchTenants(): Promise<Tenant[]> {
 }
 
 export async function connectTenant(body: Omit<Tenant, 'connectedAt'>): Promise<Tenant> {
+  const realData = await apiFetch<Tenant>('/tenants/connect', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   const newTenant: Tenant = {
     ...body,
@@ -63,6 +97,9 @@ export async function connectTenant(body: Omit<Tenant, 'connectedAt'>): Promise<
 }
 
 export async function fetchFindings(): Promise<Finding[]> {
+  const realData = await apiFetch<Finding[]>('/findings');
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   const tenantId = getActiveTenantId();
   if (tenantId === 'tenant-staging') {
@@ -76,6 +113,9 @@ export async function fetchFindings(): Promise<Finding[]> {
 }
 
 export async function fetchPostureScore(): Promise<PostureScoreData> {
+  const realData = await apiFetch<PostureScoreData>('/posture-score');
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   const findings = await fetchFindings();
   const total = findings.length;
@@ -106,6 +146,9 @@ export async function fetchPostureScore(): Promise<PostureScoreData> {
 }
 
 export async function fetchCompliance(framework: 'CIS' | 'SOC2'): Promise<{ compliancePercentage: number; controls: ComplianceControl[] }> {
+  const realData = await apiFetch<{ compliancePercentage: number; controls: ComplianceControl[] }>(`/compliance/${framework}`);
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   const findings = await fetchFindings();
   const mockComplianceControls = [...mockCISControls, ...mockSOC2Controls];
@@ -135,6 +178,9 @@ export async function fetchCompliance(framework: 'CIS' | 'SOC2'): Promise<{ comp
 }
 
 export async function fetchRemediationHistory(): Promise<RemediationEvent[]> {
+  const realData = await apiFetch<RemediationEvent[]>('/remediation-history');
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   const tenantId = getActiveTenantId();
   if (tenantId === 'tenant-staging') {
@@ -146,6 +192,9 @@ export async function fetchRemediationHistory(): Promise<RemediationEvent[]> {
 }
 
 export async function fetchTrends(): Promise<TrendDataPoint[]> {
+  const realData = await apiFetch<TrendDataPoint[]>('/trends');
+  if (realData) return realData;
+
   await delay(DELAY_MS);
   const tenantId = getActiveTenantId();
   if (tenantId === 'tenant-staging') {
