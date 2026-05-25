@@ -1,0 +1,47 @@
+{
+  "source": "aws.securityhub",
+  "detail-type": "Security Hub Findings - Imported",
+  "detail": {
+    "findings": [
+      {
+        "Id": "mock-critical-finding-001",
+        "AwsAccountId": "123456789012",
+        "CreatedAt": "2026-05-25T10:00:00Z",
+        "UpdatedAt": "2026-05-25T10:00:00Z",
+        "Title": "S3 Bucket has public read access (MOCK EVENT)",
+        "Description": "The S3 bucket mock-data-bucket allows public read access. This violates security policies.",
+        "Remediation": {
+          "Recommendation": {
+            "Text": "Remove public read access from the bucket policy.",
+            "Url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html"
+          }
+        },
+        "ProductArn": "arn:aws:securityhub:us-east-1::product/aws/securityhub",
+        "GeneratorId": "aws-foundational-security-best-practices/v/1.0.0/S3.2",
+        "Types": [
+          "Software and Configuration Checks/Industry and Regulatory Standards/AWS-Foundational-Security-Best-Practices"
+        ],
+        "Compliance": {
+          "Status": "FAILED",
+          "RelatedRequirements": [
+            "CIS AWS Foundations Benchmark v1.4.0"
+          ]
+        },
+        "Severity": {
+          "Label": "CRITICAL",
+          "Normalized": 90
+        },
+        "Workflow": {
+          "Status": "NEW"
+        },
+        "RecordState": "ACTIVE",
+        "Resources": [
+          {
+            "Type": "AwsS3Bucket",
+            "Id": "arn:aws:s3:::mock-data-bucket"
+          }
+        ]
+      }
+    ]
+  }
+}
