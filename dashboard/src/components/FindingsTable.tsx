@@ -179,13 +179,17 @@ export default function FindingsTable({ initialFindings }: FindingsTableProps) {
                 
                 // Parse AI Explanation if structured
                 let aiExplainObj = { whatHappened: '', whyRisky: '', howToFix: '' };
-                try {
-                  if (finding.aiExplanation) {
-                    aiExplainObj = JSON.parse(finding.aiExplanation);
+                if (finding.aiExplanation) {
+                  if (typeof finding.aiExplanation === 'object') {
+                    aiExplainObj = { ...aiExplainObj, ...finding.aiExplanation };
+                  } else {
+                    try {
+                      aiExplainObj = { ...aiExplainObj, ...JSON.parse(finding.aiExplanation) };
+                    } catch {
+                      // Fallback if it is regular string
+                      aiExplainObj.whatHappened = finding.aiExplanation;
+                    }
                   }
-                } catch {
-                  // Fallback if it is regular string
-                  aiExplainObj.whatHappened = finding.aiExplanation;
                 }
 
                 return (

@@ -1,0 +1,47 @@
+{
+  "source": "aws.securityhub",
+  "detail-type": "Security Hub Findings - Imported",
+  "detail": {
+    "findings": [
+      {
+        "Id": "mock-iam-finding-001",
+        "AwsAccountId": "123456789012",
+        "CreatedAt": "2026-05-25T11:00:00Z",
+        "UpdatedAt": "2026-05-25T11:00:00Z",
+        "Title": "Root account access key exposed (AI EXPLAINER TEST)",
+        "Description": "An active access key exists for the AWS account root user. This violates the foundational security best practices and exposes the entire environment to account takeover if the key is leaked.",
+        "Remediation": {
+          "Recommendation": {
+            "Text": "Delete the root access key.",
+            "Url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html#id_root-user_manage_add-key"
+          }
+        },
+        "ProductArn": "arn:aws:securityhub:us-east-1::product/aws/securityhub",
+        "GeneratorId": "aws-foundational-security-best-practices/v/1.0.0/iam-root-access-key-check",
+        "Types": [
+          "Software and Configuration Checks/Industry and Regulatory Standards/AWS-Foundational-Security-Best-Practices"
+        ],
+        "Compliance": {
+          "Status": "FAILED",
+          "RelatedRequirements": [
+            "CIS AWS Foundations Benchmark v1.4.0"
+          ]
+        },
+        "Severity": {
+          "Label": "CRITICAL",
+          "Normalized": 90
+        },
+        "Workflow": {
+          "Status": "NEW"
+        },
+        "RecordState": "ACTIVE",
+        "Resources": [
+          {
+            "Type": "AwsIamUser",
+            "Id": "arn:aws:iam::123456789012:root"
+          }
+        ]
+      }
+    ]
+  }
+}

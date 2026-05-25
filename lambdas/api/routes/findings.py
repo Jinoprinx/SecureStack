@@ -20,28 +20,33 @@ def handle_findings(event, table_name, tenant_id):
     table = dynamodb.Table(table_name)
     
     query_kwargs = {
-        "KeyConditionExpression": Key("tenantId").eq(tenant_id),
-        "Limit": limit
+        "KeyConditionExpression": Key("tenantId").eq(tenant_id)
     }
-    if exclusive_start_key:
-        query_kwargs["ExclusiveStartKey"] = exclusive_start_key
         
-    filters = []
-    if severity:
-        filters.append(Attr("severity").eq(severity))
-    if status:
-        filters.append(Attr("status").eq(status))
-    if resource_type:
-        filters.append(Attr("resourceType").eq(resource_type))
+    all_items = []
+    while True:
+        response = table.query(**query_kwargs)
+        all_items.extend(response.get("Items", []))
+        if "LastEvaluatedKey" not in response:
+            break
+        query_kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+    
+    # Filter in Python
+    items = []
+    for item in all_items:
+        if severity and item.get("severity") != severity:
+            continue
+        if status and item.get("status") != status:
+            continue
+        if resource_type and item.get("resourceType") != resource_type:
+            continue
+        items.append(item)
         
-    if filters:
-        filter_expression = filters[0]
-        for f in filters[1:]:
-            filter_expression = filter_expression & f
-        query_kwargs["FilterExpression"] = filter_expression
-        
-    response = table.query(**query_kwargs)
-    items = response.get("Items", [])
+    # Sort by timestamp descending
+    items.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    
+    # Apply limit
+    items = items[:limit]
     
     # Standardize output items (parse rawFinding string back to json for client convenience)
     for item in items:
