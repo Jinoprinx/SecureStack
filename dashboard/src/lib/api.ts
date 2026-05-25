@@ -97,8 +97,8 @@ export async function connectTenant(body: Omit<Tenant, 'connectedAt'>): Promise<
 }
 
 export async function fetchFindings(): Promise<Finding[]> {
-  const realData = await apiFetch<Finding[]>('/findings');
-  if (realData) return realData;
+  const realData = await apiFetch<any>('/findings');
+  if (realData) return Array.isArray(realData) ? realData : (realData.items || []);
 
   await delay(DELAY_MS);
   const tenantId = getActiveTenantId();
@@ -178,8 +178,8 @@ export async function fetchCompliance(framework: 'CIS' | 'SOC2'): Promise<{ comp
 }
 
 export async function fetchRemediationHistory(): Promise<RemediationEvent[]> {
-  const realData = await apiFetch<RemediationEvent[]>('/remediation-history');
-  if (realData) return realData;
+  const realData = await apiFetch<any>('/remediation-history');
+  if (realData) return Array.isArray(realData) ? realData : (realData.items || []);
 
   await delay(DELAY_MS);
   const tenantId = getActiveTenantId();

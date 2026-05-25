@@ -16,24 +16,26 @@ def handle_remediation_history(event, table_name, tenant_id):
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(table_name)
     
-    # Query findings scoped strictly to tenantId
+    # Query all findings scoped strictly to tenantId
     query_kwargs = {
-        "KeyConditionExpression": Key("tenantId").eq(tenant_id),
-        "Limit": limit,
-        "FilterExpression": Attr("status").eq("REMEDIATED") | Attr("findingId").begins_with("remediation-")
+        "KeyConditionExpression": Key("tenantId").eq(tenant_id)
     }
-    if exclusive_start_key:
-        query_kwargs["ExclusiveStartKey"] = exclusive_start_key
-        
+    
     response = table.query(**query_kwargs)
     items = response.get("Items", [])
     
+    # Filter in Python to avoid DynamoDB FilterExpression limits on primary keys
+    filtered_items = [
+        item for item in items 
+        if item.get("status") == "REMEDIATED" or item.get("findingId", "").startswith("remediation-")
+    ]
+    
     # Sort items by timestamp descending
-    items.sort(key=lambda x: x.get("remediatedAt", x.get("timestamp", "")), reverse=True)
+    filtered_items.sort(key=lambda x: x.get("remediatedAt", x.get("timestamp", "")), reverse=True)
     
     result = {
-        "items": items,
-        "lastKey": json.dumps(response.get("LastEvaluatedKey")) if response.get("LastEvaluatedKey") else None
+        "items": filtered_items[:limit],
+        "lastKey": None
     }
     
     return {

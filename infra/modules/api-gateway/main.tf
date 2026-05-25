@@ -194,7 +194,7 @@ resource "aws_api_gateway_integration_response" "findings_options_200" {
   status_code = aws_api_gateway_method_response.findings_options_200.status_code
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Tenant-Id'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
     "method.response.header.Access-Control-Allow-Origin"  = "'${var.dashboard_origin_url}'"
   }
@@ -264,7 +264,7 @@ resource "aws_api_gateway_integration_response" "posture_score_options_200" {
   status_code = aws_api_gateway_method_response.posture_score_options_200.status_code
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Tenant-Id'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
     "method.response.header.Access-Control-Allow-Origin"  = "'${var.dashboard_origin_url}'"
   }
@@ -344,7 +344,7 @@ resource "aws_api_gateway_integration_response" "compliance_options_200" {
   status_code = aws_api_gateway_method_response.compliance_options_200.status_code
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Tenant-Id'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
     "method.response.header.Access-Control-Allow-Origin"  = "'${var.dashboard_origin_url}'"
   }
@@ -414,7 +414,7 @@ resource "aws_api_gateway_integration_response" "remediation_history_options_200
   status_code = aws_api_gateway_method_response.remediation_history_options_200.status_code
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Tenant-Id'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
     "method.response.header.Access-Control-Allow-Origin"  = "'${var.dashboard_origin_url}'"
   }

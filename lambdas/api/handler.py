@@ -99,7 +99,8 @@ def lambda_handler(event, context):
     headers = event.get("headers") or {}
     
     # Read Tenant context from headers or query string parameters
-    tenant_id = headers.get("X-Tenant-Id") or event.get("queryStringParameters", {}).get("tenantId") or "tenant-prod"
+    qs = event.get("queryStringParameters") or {}
+    tenant_id = headers.get("X-Tenant-Id") or headers.get("x-tenant-id") or qs.get("tenantId") or "tenant-prod"
     
     # Handle CORS preflight
     if http_method == "OPTIONS":

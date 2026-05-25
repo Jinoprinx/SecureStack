@@ -10,8 +10,8 @@ def handle_trends(event, table_name, tenant_id):
     # Query findings scoped strictly to tenantId
     response = table.query(
         KeyConditionExpression=Key("tenantId").eq(tenant_id),
-        ProjectionExpression="findingId, severity, timestamp, #status",
-        ExpressionAttributeNames={"#status": "status"}
+        ProjectionExpression="findingId, severity, #ts, #status",
+        ExpressionAttributeNames={"#status": "status", "#ts": "timestamp"}
     )
     items = response.get("Items", [])
     
